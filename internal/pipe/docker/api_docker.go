@@ -43,24 +43,30 @@ type dockerImager struct {
 	buildx bool
 }
 
-func (i dockerImager) Push(ctx context.Context, image string, flags []string) error {
+func (i dockerImager) Push(ctx context.Context, image string, flags []string, exporter string) error {
 	if err := runCommand(ctx, ".", "docker", "push", image); err != nil {
 		return fmt.Errorf("failed to push %s: %w", image, err)
 	}
 	return nil
 }
 
-func (i dockerImager) Build(ctx context.Context, root string, images, flags []string) error {
-	if err := runCommand(ctx, root, "docker", i.buildCommand(images, flags)...); err != nil {
+func (i dockerImager) Build(ctx context.Context, root string, images, flags []string, exporter string) error {
+	if err := runCommand(ctx, root, "docker", i.buildCommand(images, flags, exporter)...); err != nil {
 		return fmt.Errorf("failed to build %s: %w", images[0], err)
 	}
 	return nil
 }
 
-func (i dockerImager) buildCommand(images, flags []string) []string {
+func (i dockerImager) buildCommand(images, flags []string, exporter string) []string {
 	base := []string{"build", "."}
 	if i.buildx {
-		base = []string{"buildx", "build", ".", "--load"}
+		base = []string{"buildx", "build", "."}
+		switch exporter {
+		case "docker":
+			base = append(base, "--output", "type=docker")
+		case "tarDockerFormat":
+			base = append(base, "--output", "type=docker,dest=/tmp/artifact.tar")
+		}
 	}
 	for _, image := range images {
 		base = append(base, "-t", image)

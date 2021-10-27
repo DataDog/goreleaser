@@ -33,8 +33,8 @@ func registerImager(use string, impl imager) {
 
 // imager is something that can build and push docker images.
 type imager interface {
-	Build(ctx context.Context, root string, images, flags []string) error
-	Push(ctx context.Context, image string, flags []string) error
+	Build(ctx context.Context, root string, images, flags []string, exporter dockerExporter) error
+	Push(ctx context.Context, image string, flags []string, exporter dockerExporter) error
 }
 
 // manifester is something that can create and push docker manifests.

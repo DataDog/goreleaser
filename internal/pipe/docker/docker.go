@@ -27,6 +27,10 @@ const (
 	useBuildx    = "buildx"
 	useDocker    = "docker"
 	useBuildPack = "buildpacks"
+
+	defaultExporterTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+	exporterTarDockerFormat = "tarDockerFormat"
+	exporterDocker          = "docker"
 )
 
 // Pipe for docker.
@@ -62,6 +66,12 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if docker.Use == "" {
 			docker.Use = useDocker
+		}
+		if docker.Exporter.Type == "" {
+			docker.Exporter.Type = exporterDocker
+		}
+		if docker.Exporter.Template == "" {
+			docker.Exporter.Template = defaultExporterTemplate
 		}
 		if err := validateImager(docker.Use); err != nil {
 			return err
@@ -174,7 +184,7 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 	}
 
 	log.Info("building docker image")
-	if err := imagers[docker.Use].Build(ctx, tmp, images, buildFlags); err != nil {
+	if err := imagers[docker.Use].Build(ctx, tmp, images, buildFlags, docker.Exporter); err != nil {
 		return err
 	}
 
@@ -187,9 +197,24 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 	if strings.TrimSpace(docker.SkipPush) == "auto" && ctx.Semver.Prerelease != "" {
 		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish")
 	}
-	for _, img := range images {
+	switch docker.Exporter.Type {
+	case "docker":
+		for _, img := range images {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Type:   artifact.PublishableDockerImage,
+				Name:   img,
+				Path:   img,
+				Goarch: docker.Goarch,
+				Goos:   docker.Goos,
+				Goarm:  docker.Goarm,
+				Extra: map[string]interface{}{
+					dockerConfigExtra: docker,
+				},
+			})
+		}
+	case "tarDockerFormat":
 		ctx.Artifacts.Add(&artifact.Artifact{
-			Type:   artifact.PublishableDockerImage,
+			Type:   artifact.SavedDockerImage,
 			Name:   img,
 			Path:   img,
 			Goarch: docker.Goarch,

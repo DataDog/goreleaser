@@ -543,19 +543,26 @@ type Checksum struct {
 
 // Docker image config.
 type Docker struct {
-	ID                 string   `yaml:"id,omitempty"`
-	IDs                []string `yaml:"ids,omitempty"`
-	Goos               string   `yaml:",omitempty"`
-	Goarch             string   `yaml:",omitempty"`
-	Goarm              string   `yaml:",omitempty"`
-	Dockerfile         string   `yaml:",omitempty"`
-	ImageTemplates     []string `yaml:"image_templates,omitempty"`
-	SkipPush           string   `yaml:"skip_push,omitempty"`
-	Files              []string `yaml:"extra_files,omitempty"`
-	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty"`
-	PushFlags          []string `yaml:"push_flags,omitempty"`
-	Buildx             bool     `yaml:"use_buildx,omitempty"` // deprecated: use Use instead
-	Use                string   `yaml:"use,omitempty"`
+	ID                 string         `yaml:"id,omitempty"`
+	IDs                []string       `yaml:"ids,omitempty"`
+	Goos               string         `yaml:",omitempty"`
+	Goarch             string         `yaml:",omitempty"`
+	Goarm              string         `yaml:",omitempty"`
+	Dockerfile         string         `yaml:",omitempty"`
+	ImageTemplates     []string       `yaml:"image_templates,omitempty"`
+	SkipPush           string         `yaml:"skip_push,omitempty"`
+	Files              []string       `yaml:"extra_files,omitempty"`
+	BuildFlagTemplates []string       `yaml:"build_flag_templates,omitempty"`
+	PushFlags          []string       `yaml:"push_flags,omitempty"`
+	Buildx             bool           `yaml:"use_buildx,omitempty"` // deprecated: use Use instead
+	Use                string         `yaml:"use,omitempty"`
+	Exporter           DockerExporter `yaml:"exporter,omitempty"`
+}
+
+// DockerExport is the configuration used to export Docker images
+type DockerExporter struct {
+	Type     string `yaml:",omitempty"`
+	Template string `yaml:",omitempty"`
 }
 
 // DockerManifest config.

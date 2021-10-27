@@ -39,6 +39,8 @@ const (
 	// PublishableDockerImage is a Docker image yet to be published.
 	PublishableDockerImage
 	// DockerImage is a published Docker image.
+	SavedDockerImage
+	// SavedDockerImage is a Docker image exported to a tarball in Docker image format.
 	DockerImage
 	// DockerManifest is a published Docker manifest.
 	DockerManifest
